@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palette Selection Tool</title>
+    <link rel='shortcut icon' href="https://images.candyfloof.com/tfh-data/arieyes.ico" type='image/x-icon' />
+    <link rel="stylesheet" type="text/css" href="/palettes/prot.css">
+    <script src="https://kit.fontawesome.com/95a43012b5.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <img class="bg-image hidden" id="background-velvet" src="https://images.candyfloof.com/tfh-data/bg/velvet.jpg">
+    <img class="bg-image hidden" id="background-arizona" src="https://images.candyfloof.com/tfh-data/bg/arizona.jpg">
+    <img class="bg-image hidden" id="background-paprika" src="https://images.candyfloof.com/tfh-data/bg/paprika.jpg">
+    <img class="bg-image hidden" id="background-oleander" src="https://images.candyfloof.com/tfh-data/bg/oleander.jpg">
+    <img class="bg-image hidden" id="background-tianhuo" src="https://images.candyfloof.com/tfh-data/bg/tianhuo.jpg">
+    <img class="bg-image hidden" id="background-pom" src="https://images.candyfloof.com/tfh-data/bg/pom.jpg">
+    <img class="bg-image hidden" id="background-shanty" src="https://images.candyfloof.com/tfh-data/bg/shanty.jpg">
+    <img class="bg-image hidden" id="background-stronghoof" src="https://images.candyfloof.com/tfh-data/bg/stronghoof.jpg">
+    <img class="bg-image hidden" id="background-texas" src="https://images.candyfloof.com/tfh-data/bg/texas.jpg">
+    <img class="bg-image" id="background-training" src="https://images.candyfloof.com/tfh-data/bg/training.jpg">
+    <div id="menu_toggle">
+        <i class="fa-solid fa-bars"></i>
+    </div>
+    <div id="menu_container" class="hidden">
+        <div class="menu_item"><a href="/">Home</a></div>
+        <div class="menu_item"><a href="/palettes">Palettes</a></div>
+        <!-- <div class="menu_item"><a href="/framedata">Frame Data</a></div> -->
+        <span class="menu_item disabled">Frame Data</div>
+        <!-- <div class="menu_item"><a href="https://enmadarei.com">EnmaDarei.com</a></div> -->
+    </div>
+    <div id="character_select_container">
+        <button id="velvet_button" class="char_sel_button">Velvet</button>
+        <button id="arizona_button" class="char_sel_button">Arizona</button>
+        <button id="paprika_button" class="char_sel_button">Paprika</button>
+        <button id="oleander_button" class="char_sel_button">Oleander</button>
+        <button id="tianhuo_button" class="char_sel_button">Tianhuo</button>
+        <button id="pom_button" class="char_sel_button">Pom</button>
+        <button id="shanty_button" class="char_sel_button">Shanty</button>
+        <button id="stronghoof_button" class="char_sel_button">Stronghoof</button>
+        <button id="texas_button" class="char_sel_button">Texas</button>
+        <button id="about_button" class="control_button"><i class="fa-solid fa-question"></i></button>
+        <button id="reset_button" class="control_button"><i class="fa-solid fa-rotate"></i></button>
+        <div id="check_container">
+            <input type="checkbox" id="retain_toggle" name="retain">
+            <label for="retain_toggle">Retain Palette Slot</label>
+        </div>
+    </div>
+    <div id="splashbox">
+        <img src="" id="splash_container" class="hidden">
+    </div>
+    <div id="cont">
+        <div id="palette_dropdown" class="hidden"></div>
+        <div id="character_display">
+            <div id="prev" class="nav_button hidden"></div>
+            <div id="name_bg" class="hidden">
+                <div id="palette_name" class="hidden"></div>
+            </div>
+            <div id="char_portrait"></div>
+            <div id="platform"><img src="https://images.candyfloof.com/tfh-data/palettes/Platform.png"></div>
+            <div id="button_combo"></div>
+            <div id="next" class="nav_button hidden"></div>
+        </div>
+    </div>
+    <div id="footer_container">
+        <div id="main_footer"><a href="https://www.mane6.com/" target="_blank" rel="noopener noreferrer">Them's Fightin' Herds</a> Palette Selection Tool v5.1.0 by <a href="https://EnmaDarei.com" target="_blank" rel="noopener noreferrer">Enma Darei</a></div>
+        <div id="footer_separator"></div>
+        <div id="dono"><a href="https://ko-fi.com/enmadarei" target="_blank" rel="noopener noreferrer" title="Keeping the site online costs money and maintaining it takes time, consider donating if you get any use from it!">Donate</a></div>
+    </div>
+    <div id="about_container" class="hidden">
+        <div id="about_content"></div>
+    </div>
+    <script src="/palettes/script.js"></script>
+</body>
+</html>
