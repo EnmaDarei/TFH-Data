@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,11 +15,12 @@ import (
 )
 
 var stanfordURL string
-var PalettesCache map[string][]map[string]string
+var PalettesCache atomic.Value
 
 func init() {
 	godotenv.Load()
 	stanfordURL = os.Getenv("STANFORD_URL")
+	PalettesCache.Store(make(map[string][]map[string]string))
 }
 
 func GetAbout(c *fiber.Ctx) error {
@@ -31,19 +33,32 @@ func GetAbout(c *fiber.Ctx) error {
 }
 
 func GetPalettesHandler(c *fiber.Ctx) error {
-	return c.JSON(PalettesCache)
+	palettes := PalettesCache.Load().(map[string][]map[string]string)
+	return c.JSON(palettes)
+}
+
+func UpdateCacheHandler(c *fiber.Ctx) error {
+	err := GetPalettes()
+	if err != nil {
+		return c.Status(500).SendString("Error getting palettes")
+	}
+	return c.SendString("Palettes cache updated")
 }
 
 func GetPalettes() error {
+	newCache := make(map[string][]map[string]string)
 	url := fmt.Sprintf("%s/api/tfh-data/palettes/all", stanfordURL)
 	_, body, err := fasthttp.Get(nil, url)
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(body, &PalettesCache)
+
+	err = json.Unmarshal(body, &newCache)
 	if err != nil {
 		return err
 	}
+
+	PalettesCache.Store(newCache)
 	fmt.Println("Palettes cached")
 	return nil
 }

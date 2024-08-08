@@ -9,14 +9,21 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
+var port string
+var authKey string
+
+type ErrorResponse struct {
+	Error  string `json:"error"`
+	Status int    `json:"status"`
+}
+
 var Logger = logger.New(logger.Config{
 	Format: "[${status}] ${method} ${protocol}://${host}${path}\n",
 })
 
-var port string
-
 func init() {
 	port = os.Getenv("PORT")
+	authKey = os.Getenv("AUTH_TOKEN")
 }
 
 func main() {
@@ -34,6 +41,7 @@ func main() {
 	api := app.Group("/api")
 	api.Get("/palettes", palettes.GetPalettesHandler)
 	api.Get("/palettes/about", palettes.GetAbout)
+	api.Get("/palettes/update", checkAuth, palettes.UpdateCacheHandler)
 	app.Static("/", "./public")
 
 	// 404 handler
@@ -44,4 +52,16 @@ func main() {
 
 func NotFound(c *fiber.Ctx) error {
 	return c.Status(404).SendString("That doesn't Exist, Deer")
+}
+
+func checkAuth(c *fiber.Ctx) error {
+	if c.Get("authorization") != authKey {
+		// fmt.Println("Unauthorized request on", c.Path())
+		response := ErrorResponse{
+			Error:  "Unauthorized",
+			Status: 401,
+		}
+		return c.Status(401).JSON(response)
+	}
+	return c.Next()
 }
