@@ -40,7 +40,6 @@ main()
 
 retain_toggle.addEventListener('click', () => {
     retain_toggle_checked = retain_toggle.checked;
-    // console.log(`Retain: ${retain_toggle_checked}`);
     checkbox_container.classList.toggle('enabled', retain_toggle_checked);
 });
 
@@ -81,7 +80,6 @@ charButtons.forEach(button => {
             palette_dropdown.classList.remove('hidden');
         }
         for (let i = 0; i < backgrounds.length; i++) {
-            // console.log(backgrounds[i].id);
             let character_background = backgrounds[i].id.replace('background-','');
             if (character_background === character) {
                 backgrounds[i].classList.remove('hidden');
@@ -148,7 +146,6 @@ function capitalize(string) {
 function unhide() {
     nav_buttons.forEach(button => button.classList.remove('hidden'));
     palette_name.classList.remove('hidden');
-    // checkbox_container.classList.remove('hidden');
     name_bg.classList.remove('hidden');
 }
 
@@ -183,7 +180,6 @@ function reset() {
     palette_dropdown.classList.add('hidden');
     palette_dropdown.innerHTML = palette_name.innerHTML = button_display.innerHTML = char_portrait.innerHTML = "";
     for (let i = 0; i < backgrounds.length; i++) {
-        // console.log(backgrounds[i].id);
         let character_background = backgrounds[i].id.replace('background-','');
         if (character_background === "training") {
             backgrounds[i].classList.remove('hidden');
@@ -203,7 +199,6 @@ async function main() {
 async function getAbout() {
     try {
         const response = await axios.get(`/api/palettes/about`);
-        // const formatted = parseMarkdown(response.data);
         about_content.innerHTML = response.data;
         return response.data;
     }
@@ -218,5 +213,7 @@ about_button.addEventListener('click', () => {
 });
 
 about_container.addEventListener('click', (event) => {
-    about_container.classList.add('hidden');
+    if (event.target === about_container) {
+        about_container.classList.add('hidden');
+    }
 });
