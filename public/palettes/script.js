@@ -23,7 +23,6 @@ let palettes = {};
 let selectedPalette = 1;
 let activeButton;
 let character = "";
-let menuHidden = true;
 const adjustedCharacters = new Set(['oleander', 'stronghoof', 'texas']);
 const wideCharacters = new Set(['oleander', 'texas']);
 const numberMap = new Map([
@@ -46,7 +45,6 @@ retain_toggle.addEventListener('click', () => {
 
 menu_toggle.addEventListener('click', () => {
     menu_container.classList.toggle('hidden');
-    menuHidden = !menuHidden;
 });
 
 palette_name.addEventListener('click', () => {
