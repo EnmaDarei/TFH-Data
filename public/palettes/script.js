@@ -22,7 +22,7 @@ let retain_toggle_checked = retain_toggle.checked;
 let palettes = {};
 let selectedPalette = 1;
 let activeButton;
-let selectedChar = "";
+let character = "";
 const adjustedCharacters = new Set(['oleander', 'stronghoof', 'texas']);
 const wideCharacters = new Set(['oleander', 'texas']);
 const numberMap = new Map([
@@ -36,7 +36,7 @@ const numberMap = new Map([
     [39, "None"],
 ]);
 
-getAbout();
+main()
 
 retain_toggle.addEventListener('click', () => {
     retain_toggle_checked = retain_toggle.checked;
@@ -60,17 +60,15 @@ reset_button.addEventListener('click', () => {
 charButtons.forEach(button => {
     button.addEventListener('click', async () => {
         if (button.classList.contains('active')) return;
-        palettes = {};
         character = button.id.replace('_button','');
-        palettes = await GetPalettes(character)
         button.classList.add('active');
         unhide();
         makePaletteList();
         if (activeButton !== null && activeButton !== undefined) activeButton.classList.remove('active');
         activeButton = button;
         if (retain_toggle_checked) {
-            if (selectedPalette >= Object.keys(palettes).length) {
-                selectedPalette = Object.keys(palettes).length;
+            if (selectedPalette >= Object.keys(palettes[character]).length) {
+                selectedPalette = Object.keys(palettes[character]).length;
             }
         }
         else {
@@ -95,7 +93,7 @@ charButtons.forEach(button => {
         char_portrait.className = adjustedCharacters.has(character) ? character : "" ;
         nav_buttons.forEach(button => button.classList.toggle('wide',wideCharacters.has(character)));
         palette_dropdown.scrollTop = 0;
-        FillDisplays(palettes[selectedPalette].name, palettes[selectedPalette].image,selectedPalette);
+        FillDisplays(palettes[character][selectedPalette-1].name, palettes[character][selectedPalette-1].image,selectedPalette);
     });
 });
 
@@ -104,7 +102,7 @@ nav_buttons.forEach(button => {
         const action = button.id.replace('_button','');
         switch (action) {
             case 'next':
-                if (selectedPalette >= Object.keys(palettes).length) {
+                if (selectedPalette >= Object.keys(palettes[character]).length) {
                     selectedPalette = 1;
                 }
                 else {
@@ -113,20 +111,20 @@ nav_buttons.forEach(button => {
                 break;
             case 'prev':
                 if (selectedPalette <= 1) {
-                    selectedPalette = Object.keys(palettes).length;
+                    selectedPalette = Object.keys(palettes[character]).length;
                 }
                 else {
                     selectedPalette--;
                 }
                 break;
         }
-        FillDisplays(palettes[selectedPalette].name, palettes[selectedPalette].image,selectedPalette);
+        FillDisplays(palettes[character][selectedPalette-1].name, palettes[character][selectedPalette-1].image,selectedPalette);
     })
 })
 
-async function GetPalettes(character) {
+async function GetPalettes() {
     try {
-        const response = await axios.get(`/api/palettes/${character}`);
+        const response = await axios.get(`/api/palettes/`);
         return response.data;
     }
     catch (error) {
@@ -136,6 +134,7 @@ async function GetPalettes(character) {
 }
 
 function FillDisplays(paletteName,image,slot) {
+    console.log(`${character} ${slot}: ${paletteName}`);
     if (numberMap.get(slot)) slot = numberMap.get(slot);
     button_display.innerHTML = `<img src="https://images.candyfloof.com/tfh-data/palettes/buttons/${slot}.png">`;
     char_portrait.innerHTML = `<img src="${image}">`;
@@ -155,15 +154,15 @@ function unhide() {
 
 function makePaletteList(){
     palette_dropdown.innerHTML = "";
-    for (let i = 1; i <= Object.keys(palettes).length; i++) {
+    for (let i = 1; i <= Object.keys(palettes[character]).length; i++) {
         const palette = document.createElement('div');
         palette.classList.add(`palette_option`);
         palette.id = `palette_option_${i}`;
-        palette.innerText = palettes[i].name;
+        palette.innerText = palettes[character][i-1].name;
         palette.addEventListener('click', () => {
             const slotSelection = parseInt(palette.id.replace('palette_option_',''));
             selectedPalette = slotSelection;
-            FillDisplays(palettes[slotSelection].name,palettes[slotSelection].image,slotSelection);
+            FillDisplays(palettes[character][slotSelection-1].name,palettes[character][slotSelection-1].image,slotSelection);
         });
         palette_dropdown.appendChild(palette);
     }
@@ -175,7 +174,6 @@ function reset() {
         checkbox_container.classList.toggle('enabled', retain_toggle_checked);
     }
     if (firstLoad) return;
-    palettes = {};
     selectedPalette = 1;
     nav_buttons.forEach(button => button.classList.add('hidden'));
     palette_name.classList.add('hidden');
@@ -197,9 +195,14 @@ function reset() {
     charButtons.forEach(button => button.classList.remove('active'));
 }
 
+async function main() {
+    palettes = await GetPalettes();
+    await getAbout();
+}
+
 async function getAbout() {
     try {
-        const response = await axios.get(`/api/palettes/about-text`);
+        const response = await axios.get(`/api/palettes/about`);
         // const formatted = parseMarkdown(response.data);
         about_content.innerHTML = response.data;
         return response.data;
