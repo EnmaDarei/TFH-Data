@@ -1,4 +1,4 @@
-## Enma's TFH Palette Tool
+# Enma's TFH Palette Tool
 
 Did you know you can choose your character's palette using button combinations without having to press start and scroll through all of them manually?
 This app lets you see all the character palettes and button combinations needed to choose a given palette. Just click on a character's name to get started!
