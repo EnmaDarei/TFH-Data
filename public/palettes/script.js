@@ -212,9 +212,8 @@ async function getAbout() {
 
 about_button.addEventListener('click', () => {
     about_container.classList.toggle('hidden');
-    about_container.addEventListener('click', (event) => {
-        if (event.target === about_container) {
-            about_container.classList.add('hidden');
-        }
-    });
+});
+
+about_container.addEventListener('click', (event) => {
+    about_container.classList.add('hidden');
 });
