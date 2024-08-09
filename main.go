@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	fd "tfhdata/packages/framedata"
 	"tfhdata/packages/palettes"
 
 	"github.com/gofiber/fiber/v2"
@@ -28,6 +29,7 @@ func init() {
 
 func main() {
 	go palettes.PaletteAutoCache()
+	go fd.AutoUpdateFrameDataCache()
 	app := fiber.New()
 	app.Use(Logger)
 
@@ -38,10 +40,17 @@ func main() {
 		return c.Next()
 	})
 
+	//private files
+	app.Get("/404.css", func(c *fiber.Ctx) error {
+		return c.SendFile("./private/404/404.css")
+	})
+
 	api := app.Group("/api")
 	api.Get("/palettes", palettes.GetPalettesHandler)
 	api.Get("/palettes/about", palettes.GetAbout)
 	api.Get("/palettes/update", checkAuth, palettes.UpdateCacheHandler)
+	api.Get("/framedata", fd.GetFrameDataHandler)
+	api.Get("/framedata/update", checkAuth, fd.UpdateFrameDataHandler)
 	app.Static("/", "./public")
 
 	// 404 handler
@@ -51,7 +60,7 @@ func main() {
 }
 
 func NotFound(c *fiber.Ctx) error {
-	return c.Status(404).SendString("That doesn't Exist, Deer")
+	return c.Status(404).SendFile("./private/404/404.html")
 }
 
 func checkAuth(c *fiber.Ctx) error {

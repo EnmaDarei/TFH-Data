@@ -7,20 +7,17 @@ import (
 	"regexp"
 	"strings"
 	"sync/atomic"
+	fd "tfhdata/packages/framedata"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/joho/godotenv"
 	"github.com/valyala/fasthttp"
 )
 
-var stanfordURL string
-var PalettesCache atomic.Value
+var palettesCache atomic.Value
 
 func init() {
-	godotenv.Load()
-	stanfordURL = os.Getenv("STANFORD_URL")
-	PalettesCache.Store(make(map[string][]map[string]string))
+	palettesCache.Store(make(map[string][]map[string]string))
 }
 
 func GetAbout(c *fiber.Ctx) error {
@@ -33,7 +30,7 @@ func GetAbout(c *fiber.Ctx) error {
 }
 
 func GetPalettesHandler(c *fiber.Ctx) error {
-	palettes := PalettesCache.Load().(map[string][]map[string]string)
+	palettes := palettesCache.Load().(map[string][]map[string]string)
 	return c.JSON(palettes)
 }
 
@@ -47,7 +44,7 @@ func UpdateCacheHandler(c *fiber.Ctx) error {
 
 func GetPalettes() error {
 	newCache := make(map[string][]map[string]string)
-	url := fmt.Sprintf("%s/api/tfh-data/palettes/all", stanfordURL)
+	url := fmt.Sprintf("%s/api/tfh-data/palettes", fd.StanfordURL)
 	_, body, err := fasthttp.Get(nil, url)
 	if err != nil {
 		return err
@@ -58,17 +55,23 @@ func GetPalettes() error {
 		return err
 	}
 
-	PalettesCache.Store(newCache)
+	palettesCache.Store(newCache)
 	fmt.Println("Palettes cached")
 	return nil
 }
 
 func PaletteAutoCache() {
-	GetPalettes()
+	err := GetPalettes()
+	if err != nil {
+		fmt.Println("Error getting palettes:", err)
+	}
 	ticker := time.NewTicker(4 * time.Hour)
 	defer ticker.Stop()
 	for range ticker.C {
-		GetPalettes()
+		err := GetPalettes()
+		if err != nil {
+			fmt.Println("Error getting palettes:", err)
+		}
 	}
 }
 
