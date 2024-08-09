@@ -34,6 +34,15 @@ func init() {
 
 func GetFrameDataHandler(c *fiber.Ctx) error {
 	frameData := frameDataCache.Load().(map[string]map[string]map[string]MoveFD)
+	if len(frameData) == 0 {
+		fmt.Println("Frame Data cache is empty, attempting to update cache...")
+		err := getFrameDataCache()
+		if err != nil {
+			fmt.Println("Error getting frame data:", err)
+			return c.Status(500).SendString("Error getting frame data")
+		}
+		frameData = frameDataCache.Load().(map[string]map[string]map[string]MoveFD)
+	}
 	return c.JSON(frameData)
 }
 
