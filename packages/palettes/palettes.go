@@ -31,6 +31,15 @@ func GetAbout(c *fiber.Ctx) error {
 
 func GetPalettesHandler(c *fiber.Ctx) error {
 	palettes := palettesCache.Load().(map[string][]map[string]string)
+	if len(palettes) == 0 {
+		fmt.Println("Palettes cache is empty, attempting to update cache...")
+		err := GetPalettes()
+		if err != nil {
+			fmt.Println("Error getting palettes:", err)
+			return c.Status(500).SendString("Error getting palettes")
+		}
+		palettes = palettesCache.Load().(map[string][]map[string]string)
+	}
 	return c.JSON(palettes)
 }
 
