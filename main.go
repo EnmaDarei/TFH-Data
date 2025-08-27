@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	database "tfhdata/packages/db"
 	fd "tfhdata/packages/framedata"
 	"tfhdata/packages/palettes"
 
@@ -28,8 +29,9 @@ func init() {
 }
 
 func main() {
+	database.Initialize_Database()
 	go palettes.PaletteAutoCache()
-	go fd.AutoUpdateFrameDataCache()
+	// go fd.AutoUpdateFrameDataCache()
 	app := fiber.New()
 	app.Use(Logger)
 

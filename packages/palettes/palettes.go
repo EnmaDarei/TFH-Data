@@ -1,24 +1,37 @@
 package palettes
 
 import (
-	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"strings"
-	"sync/atomic"
-	fd "tfhdata/packages/framedata"
+	"sync"
+	database "tfhdata/packages/db"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/valyala/fasthttp"
 )
 
-var palettesCache atomic.Value
-
-func init() {
-	palettesCache.Store(make(map[string][]map[string]string))
+type Palette struct {
+	Name  string `json:"name"`
+	Image string `json:"image"`
 }
+
+type Palettes struct {
+	Velvet     []Palette `json:"velvet"`
+	Tianhuo    []Palette `json:"tianhuo"`
+	Arizona    []Palette `json:"arizona"`
+	Oleander   []Palette `json:"oleander"`
+	Paprika    []Palette `json:"paprika"`
+	Pom        []Palette `json:"pom"`
+	Shanty     []Palette `json:"shanty"`
+	Stronghoof []Palette `json:"stronghoof"`
+	Texas      []Palette `json:"texas"`
+}
+
+var palettesCache Palettes
+var cache_mux sync.Mutex
 
 func GetAbout(c *fiber.Ctx) error {
 	text, err := os.ReadFile("./public/palettes/about.md")
@@ -30,16 +43,9 @@ func GetAbout(c *fiber.Ctx) error {
 }
 
 func GetPalettesHandler(c *fiber.Ctx) error {
-	palettes := palettesCache.Load().(map[string][]map[string]string)
-	if len(palettes) == 0 {
-		fmt.Println("Palettes cache is empty, attempting to update cache...")
-		err := GetPalettes()
-		if err != nil {
-			fmt.Println("Error getting palettes:", err)
-			return c.Status(500).SendString("Error getting palettes")
-		}
-		palettes = palettesCache.Load().(map[string][]map[string]string)
-	}
+	cache_mux.Lock()
+	palettes := palettesCache
+	cache_mux.Unlock()
 	return c.JSON(palettes)
 }
 
@@ -52,19 +58,59 @@ func UpdateCacheHandler(c *fiber.Ctx) error {
 }
 
 func GetPalettes() error {
-	newCache := make(map[string][]map[string]string)
-	url := fmt.Sprintf("%s/api/tfh-data/palettes", fd.StanfordURL)
-	_, body, err := fasthttp.Get(nil, url)
+	var new_cache Palettes
+	characters := []string{"velvet", "arizona", "paprika", "tianhuo", "oleander", "pom", "shanty", "stronghoof", "texas"}
+	queryString := fmt.Sprintf("SELECT %v FROM palettes ORDER BY slot asc", strings.Join(characters, ","))
+	rows, err := database.DB.Query(queryString)
 	if err != nil {
-		return err
+		log.Println("Error querying the database:", err)
 	}
+	defer rows.Close()
+	for rows.Next() {
+		paletteNames := make([]string, len(characters))
+		scanArgs := make([]interface{}, len(characters))
+		for i := range characters {
+			scanArgs[i] = &paletteNames[i]
+		}
 
-	err = json.Unmarshal(body, &newCache)
-	if err != nil {
-		return err
+		err := rows.Scan(scanArgs...)
+		if err != nil {
+			log.Println("Error scanning row:", err)
+			return err
+		}
+
+		for i, char := range characters {
+			if paletteNames[i] != "-" {
+				palette := Palette{
+					Name:  paletteNames[i],
+					Image: fmt.Sprintf("https://images.candyfloof.com/tfh-data/palettes/%s/%s.png", char, paletteNames[i]),
+				}
+				switch char {
+				case "velvet":
+					new_cache.Velvet = append(new_cache.Velvet, palette)
+				case "arizona":
+					new_cache.Arizona = append(new_cache.Arizona, palette)
+				case "paprika":
+					new_cache.Paprika = append(new_cache.Paprika, palette)
+				case "tianhuo":
+					new_cache.Tianhuo = append(new_cache.Tianhuo, palette)
+				case "oleander":
+					new_cache.Oleander = append(new_cache.Oleander, palette)
+				case "pom":
+					new_cache.Pom = append(new_cache.Pom, palette)
+				case "shanty":
+					new_cache.Shanty = append(new_cache.Shanty, palette)
+				case "stronghoof":
+					new_cache.Stronghoof = append(new_cache.Stronghoof, palette)
+				case "texas":
+					new_cache.Texas = append(new_cache.Texas, palette)
+				}
+			}
+		}
 	}
-
-	palettesCache.Store(newCache)
+	cache_mux.Lock()
+	defer cache_mux.Unlock()
+	palettesCache = new_cache
 	fmt.Println("Palettes cached")
 	return nil
 }
